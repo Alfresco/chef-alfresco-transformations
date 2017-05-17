@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export LD_LIBRARY_PATH=""
+
+sudo -u <%= @lo_user %> <%= @lo_path%>/program/.soffice.bin "$@"

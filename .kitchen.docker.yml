@@ -1,0 +1,40 @@
+---
+driver:
+  name: docker
+  use_sudo: false
+
+provisioner:
+  name: chef_zero
+  always_update_cookbooks: true
+  log_level: info
+  require_chef_omnibus: 12.18.31
+
+verifier:
+  name: inspec
+
+platforms:
+  - name: centos-7.2
+    driver_config:
+      platform: centos
+      run_command: /usr/sbin/init
+      privileged: true
+      require_chef_omnibus: 12.18.31
+
+
+suites:
+  - name: default
+    run_list:
+      - recipe[alfresco-utils::package-repositories]
+      - recipe[alfresco-transformations::default]
+    # verifier:
+    #   inspec_tests:
+    #     - test/smoke/default
+    attributes:
+  - name: default
+    run_list:
+      - recipe[alfresco-utils::package-repositories]
+      - recipe[alfresco-transformations::default]
+    # verifier:
+    #   inspec_tests:
+    #     - test/smoke/default
+    attributes:
