@@ -21,7 +21,7 @@ default['transformations']['libreoffice']['initialise']['command']['full'] = laz
 default['transformations']['fonts']['exclude_font_packages'] = 'tv-fonts chkfontpath pagul-fonts\*'
 
 # ImageMagick
-default['transformations']['imagemagick']['version'] = '6.9.1-10'
+default['transformations']['imagemagick']['version'] = '7.0.5-6'
 default['transformations']['imagemagick']['use_im_os_repo'] = false
 default['transformations']['imagemagick']['libs']['name'] = lazy { "ImageMagick-libs-#{node['transformations']['imagemagick']['version']}.x86_64.rpm" }
 default['transformations']['imagemagick']['libs']['url'] = lazy { "ftp://ftp.icm.edu.pl/vol/rzm4/ImageMagick/linux/CentOS/x86_64/#{node['transformations']['imagemagick']['libs']['name']}" }
