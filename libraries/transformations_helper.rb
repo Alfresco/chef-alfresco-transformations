@@ -11,6 +11,10 @@ module TransformationHelper
   #   end
   # end
 
+  def get_rpm_version(rpm_name)
+    shell_out("rpm -qa --queryformat \"%{VERSION}\" #{rpm_name}").stdout.to_s.strip!
+  end
+
   def libre_office_path
     full_path = shell_out('whereis -b libreoffice | xargs readlink -z').stdout.to_s.strip!
     full_path_array = full_path.split('/')
