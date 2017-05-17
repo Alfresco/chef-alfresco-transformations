@@ -23,6 +23,7 @@ suites:
     run_list:
       - recipe[alfresco-utils::package-repositories]
       - recipe[alfresco-transformations::default]
+      - recipe[alfresco-transformations::initialise_libreoffice]
     attributes: {
       "transformations": {
         "libreoffice" : {
