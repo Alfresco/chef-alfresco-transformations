@@ -6,6 +6,7 @@ default['transformations']['libreoffice']['tar']['url'] = lazy { "https://downlo
 default['transformations']['libreoffice']['libreoffice_user'] = 'libreoffice'
 default['transformations']['libreoffice']['temp_folder'] = '/usr/share/tomcat/alfresco/temp'
 default['transformations']['libreoffice']['tomcat_user'] = 'tomcat'
+default['transformations']['libreoffice']['link_directory'] = '/opt/libreoffice'
 
 # LibreOffice initialise
 default['transformations']['libreoffice']['jodconverter']['portNumbers'] = '8101'
@@ -27,8 +28,11 @@ default['transformations']['imagemagick']['libs']['name'] = lazy { "ImageMagick-
 default['transformations']['imagemagick']['libs']['url'] = lazy { "ftp://ftp.icm.edu.pl/vol/rzm4/ImageMagick/linux/CentOS/x86_64/#{node['transformations']['imagemagick']['libs']['name']}" }
 default['transformations']['imagemagick']['name'] = lazy { "ImageMagick-#{node['transformations']['imagemagick']['version']}.x86_64.rpm" }
 default['transformations']['imagemagick']['url'] = lazy { "ftp://ftp.icm.edu.pl/vol/rzm4/ImageMagick/linux/CentOS/x86_64/#{node['transformations']['imagemagick']['name']}" }
+default['transformations']['imagemagick']['link_config'] = '/usr/lib64/ImageMagick-config'
+default['transformations']['imagemagick']['link_modules'] = '/usr/lib64/ImageMagick-modules'
+default['transformations']['imagemagick']['extra_dependencies'] = %w()
 
 # transformations installation
 default['transformations']['install_fonts'] = false
-default['transformations']['install_swftools'] = false
 default['transformations']['install_imagemagick'] = true
+default['transformations']['install_libreoffice'] = true

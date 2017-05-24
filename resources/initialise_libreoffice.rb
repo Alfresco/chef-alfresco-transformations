@@ -1,3 +1,5 @@
+# This resource is meant to be used by AWS instances using AMIs with prebaked LibreOffice
+
 actions :run
 default_action :run
 
@@ -15,7 +17,6 @@ action :run do
     user run_user
     returns 81
     creates user_installation_path
-    not_if { Mixlib::ShellOut.new('pgrep -f soffice.bin').run_command.exitstatus == 0 }
     notifies :delete, "directory[#{user_installation_path}]", :immediately
     ignore_failure true
   end

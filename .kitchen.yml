@@ -24,6 +24,7 @@ suites:
       - recipe[alfresco-utils::package-repositories]
       - recipe[alfresco-transformations::default]
       - recipe[alfresco-transformations::initialise_libreoffice]
+      - recipe[alfresco-utils::node_json]
     attributes: {
       "transformations": {
         "libreoffice" : {
@@ -33,17 +34,25 @@ suites:
             }
           }
         }
-
+    verifier:
+      inspec_tests:
+        - name: chef-alfresco-inspec-transformations
+          git: https://github.com/Alfresco/chef-alfresco-inspec-transformations
+          tag: v1.0
   - name: extras
     run_list:
       - recipe[alfresco-utils::package-repositories]
       - recipe[alfresco-transformations::default]
+      - recipe[alfresco-utils::node_json]
     attributes: {
       "transformations": {
-            "install_fonts" : true,
-            "install_swftools" : true,
             "imagemagick": {
                 "use_im_os_repo" : true
               }
             }
           }
+    verifier:
+      inspec_tests:
+        - name: chef-alfresco-inspec-transformations
+          git: https://github.com/Alfresco/chef-alfresco-inspec-transformations
+          tag: v1.0

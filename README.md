@@ -39,6 +39,7 @@ The following platforms are supported and tested with Test Kitchen:
 | default['transformations']['libreoffice']['libreoffice_user'] | String | Libreoffice User |  libreoffice |
 | default['transformations']['libreoffice']['temp_folder'] | String  |  Folder to store user configuration for Libreoffice |  /usr/share/tomcat/alfresco/temp |
 | default['transformations']['libreoffice']['tomcat_user'] | String  | Tomcat user (running soffice.bin) | tomcat |
+| default['transformations']['libreoffice']['link_directory'] | String  | Symlink to libreoffice | /opt/libreoffice |
 | default['transformations']['libreoffice']['jodconverter']['portNumbers']  | String  | jodconverter port number |  8101 |
 | default['transformations']['libreoffice']['initialise']['enabled']  | Boolean  | Enable/disable LibreOffice Initialisation |  false |
 | default['transformations']['libreoffice']['initialise']['command']['host'] | String | Host | 127.0.0.1
@@ -47,15 +48,18 @@ The following platforms are supported and tested with Test Kitchen:
 | default['transformations']['libreoffice']['initialise']['command']['env'] | String | Env Parameters | -env:UserInstallation=file:///usr/share/tomcat/alfresco/temp/.jodconverter_socket_host-127.0.0.1_port-8101
 | default['transformations']['libreoffice']['initialise']['command']['params'] | String | Additional Params | --headless --nocrashreport --nodefault --nofirststartwizard --nolockcheck --nologo --norestore
 | default['transformations']['libreoffice']['initialise']['command']['full'] | String | Full Command | "--accept=socket,host=127.0.0.1,port=8101;urp;StarOffice.ServiceManager" -env:UserInstallation=file:///usr/share/tomcat/alfresco/temp/.jodconverter_socket_host-127.0.0.1_port-8101 --headless --nocrashreport --nodefault --nofirststartwizard --nolockcheck --nologo —norestore
-| default['transformations']['fonts']['exclude_font_packages'] | String | Font Packages to exclude | tv-fonts chkfontpath pagul-fonts\*
-| default['transformations']['imagemagick']['version'] | String | ImageMagick version |  '6.9.1-10'
-| default['transformations']['imagemagick']['use_im_os_repo'] | String | Use ImageMagick from OS repo | false
+| default['transformations']['fonts']['exclude_font_packages'] | String | Font Packages to exclude use_im_os_repo = false | tv-fonts chkfontpath pagul-fonts\*
+| default['transformations']['imagemagick']['version'] | String | ImageMagick version (This will work just with ) |  '7.0.5-6'
+| default['transformations']['imagemagick']['use_im_os_repo'] | Boolean | Use ImageMagick from OS repo | false
 | default['transformations']['imagemagick']['libs']['name'] | String | ImageMagick libs rpm name | ImageMagick-libs-6.9.1-10.x86_64.rpm
 | default['transformations']['imagemagick']['libs']['url'] | String | ImageMagick libs rpm url | ftp://ftp.icm.edu.pl/vol/rzm4/ImageMagick/linux/CentOS/x86_64/ImageMagick-libs-6.9.1-10.x86_64.rpm
 | default['transformations']['imagemagick']['name'] | String | ImageMagick rpm name | ImageMagick-6.9.1-10.x86_64.rpm
 | default['transformations']['imagemagick']['url'] | String | ImageMagick rpm url | ftp://ftp.icm.edu.pl/vol/rzm4/ImageMagick/linux/CentOS/x86_64/ImageMagick-6.9.1-10.x86_64.rpm
+| default['transformations']['imagemagick']['link_config'] | String | Symlink to ImageMagick config folder | /usr/lib64/ImageMagick-config
+| default['transformations']['imagemagick']['link_modules'] | String | Symlink to ImageMagick modules folder| /usr/lib64/ImageMagick-modules
+| default['transformations']['imagemagick']['extra_dependencies'] | Array | <empty>
 | default['transformations']['install_fonts'] | Boolean | Install fonts? | false
-| default['transformations']['install_swftools'] | Boolean | Install swftools? | false
+| default['transformations']['install_libreoffice'] | Boolean | Install LibreOffice? | true
 | default['transformations']['install_imagemagick'] | Boolean | Install ImageMagick? | true
 
 
@@ -79,6 +83,29 @@ Include `alfresco-tranformations` in your node `run_list`:
   ]
 }
 ```
+
+# Resources
+
+`initialise_libreoffice`: resource to initalise Libreoffice and verify it works correctly. It is mainly used within EC2 instances with AMI pre-baked with LibreOffice
+
+properties:
+
+`version` String, default: lazy { node['transformations']['libreoffice']['version'] }
+`initialise_command` String, default: lazy { node['transformations']['libreoffice']['initialise']['command']['full'] }
+`run_user` String, default: lazy { node['transformations']['libreoffice']['tomcat_user'] }
+`user_installation_path` String, default: lazy { node['transformations']['libreoffice']['initialise']['command']['user_installation_path'] }
+`lo_installation_path` String, default: lazy { libre_office_path }
+
+example:
+
+```
+initialise_libreoffice 'initialise' do
+  only_if { node['transformations']['libreoffice']['initialise']['enabled'] }
+  not_if {  shell_out('pgrep -f soffice.bin').exitstatus == 0 }
+  only_if { shell_out('whereis -b libreoffice | cut -d\':\' -f2 | grep libreoffice').exitstatus == 0 }
+end
+```
+
 ## Testing
 Refer to: [Testing](./TESTING.md)
 ## License and Authors

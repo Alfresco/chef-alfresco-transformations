@@ -4,6 +4,7 @@ libre_office_name = node['transformations']['libreoffice']['name']
 libre_office_tar_name = node['transformations']['libreoffice']['tar']['name']
 libre_office_tar_url = node['transformations']['libreoffice']['tar']['url']
 libreoffice_temp_folder = node['transformations']['libreoffice']['temp_folder']
+link_directory = node['transformations']['libreoffice']['link_directory']
 
 user tomcat_user
 
@@ -20,13 +21,13 @@ remote_file "#{Chef::Config[:file_cache_path]}/#{libre_office_tar_name}" do
   source libre_office_tar_url
   owner libreoffice_user
   group libreoffice_user
+  retries 2
 end
 
 execute 'unpack-libreoffice' do
   cwd Chef::Config[:file_cache_path]
   command "tar -xf #{libre_office_tar_name}"
   creates "#{Chef::Config[:file_cache_path]}/#{libre_office_name}"
-  not_if { File.exist?("#{Chef::Config[:file_cache_path]}/#{libre_office_name}") }
 end
 
 execute 'install-libreoffice' do
@@ -66,6 +67,8 @@ directory libreoffice_temp_folder do
   recursive true
   action :create
   owner tomcat_user
+  group tomcat_user
+  mode 02755
 end
 
 execute 'change-libreoffice-permissions' do
@@ -73,8 +76,6 @@ execute 'change-libreoffice-permissions' do
     <<-EOF
       chown #{libreoffice_user}:#{tomcat_user} -R #{node.run_state['libreoffice_path']}
       chmod -R 00755 #{node.run_state['libreoffice_path']}
-      chgrp -R #{tomcat_user} #{libreoffice_temp_folder}
-      chmod g+sw #{libreoffice_temp_folder}
       EOF
   }
 end
@@ -84,4 +85,13 @@ sudo 'libreoffice' do
   runas     libreoffice_user
   commands  lazy { ["#{node.run_state['libreoffice_path']}/program/.soffice.bin"] }
   nopasswd true
+end
+
+link 'linking Libreoffice' do
+  to lazy { node.run_state['libreoffice_path'] }
+  target_file link_directory
+  owner libreoffice_user
+  group tomcat_user
+  mode 00755
+  action :create
 end

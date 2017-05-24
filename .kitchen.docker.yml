@@ -12,29 +12,41 @@ provisioner:
 verifier:
   name: inspec
 
-platforms:
-  - name: centos-7.2
-    driver_config:
-      platform: centos
-      run_command: /usr/sbin/init
-      privileged: true
-      require_chef_omnibus: 12.18.31
-
-
 suites:
   - name: default
     run_list:
       - recipe[alfresco-utils::package-repositories]
       - recipe[alfresco-transformations::default]
-    # verifier:
-    #   inspec_tests:
-    #     - test/smoke/default
-    attributes:
-  - name: default
+      - recipe[alfresco-transformations::initialise_libreoffice]
+      - recipe[alfresco-utils::node_json]
+    attributes: {
+      "transformations": {
+        "libreoffice" : {
+            "initialise": {
+                "enabled" : true
+              }
+            }
+          }
+        }
+    verifier:
+      inspec_tests:
+        - name: chef-alfresco-inspec-transformations
+          git: https://github.com/Alfresco/chef-alfresco-inspec-transformations
+          tag: v1.0
+  - name: extras
     run_list:
       - recipe[alfresco-utils::package-repositories]
       - recipe[alfresco-transformations::default]
-    # verifier:
-    #   inspec_tests:
-    #     - test/smoke/default
-    attributes:
+      - recipe[alfresco-utils::node_json]
+    attributes: {
+      "transformations": {
+            "imagemagick": {
+                "use_im_os_repo" : true
+              }
+            }
+          }
+    verifier:
+      inspec_tests:
+        - name: chef-alfresco-inspec-transformations
+          git: https://github.com/Alfresco/chef-alfresco-inspec-transformations
+          tag: v1.0
