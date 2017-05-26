@@ -32,7 +32,7 @@ suites:
       inspec_tests:
         - name: chef-alfresco-inspec-transformations
           git: https://github.com/Alfresco/chef-alfresco-inspec-transformations
-          tag: v1.0
+          tag: v1.1
   - name: extras
     run_list:
       - recipe[alfresco-utils::package-repositories]
@@ -49,4 +49,4 @@ suites:
       inspec_tests:
         - name: chef-alfresco-inspec-transformations
           git: https://github.com/Alfresco/chef-alfresco-inspec-transformations
-          tag: v1.0
+          tag: v1.1

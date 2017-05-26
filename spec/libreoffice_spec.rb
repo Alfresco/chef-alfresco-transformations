@@ -26,25 +26,13 @@ RSpec.describe 'alfresco-transformations::libreoffice' do
     expect(chef_run).to manage_group('tomcat').with(members: ['libreoffice'])
   end
 
-  it 'should create remote file libreoffice tar' do
-    chef_run.node.normal['transformations']['libreoffice']['tar']['name'] = 'libreoffice.tar.gz'
-    chef_run.node.normal['transformations']['libreoffice']['tar']['url'] = 'http://libreofficeurl'
-    chef_run.converge(described_recipe)
-    expect(chef_run).to create_remote_file('/var/chef/cache/libreoffice.tar.gz').with(
-      source: 'http://libreofficeurl',
-      owner: 'libreoffice',
-      group: 'libreoffice',
-      retries: 2
-    )
-  end
-
-  it 'should execute unpack-libreoffice' do
+  it 'should extract libreoffice tar' do
     chef_run.node.normal['transformations']['libreoffice']['tar']['name'] = 'libreoffice.tar.gz'
     chef_run.node.normal['transformations']['libreoffice']['name'] = 'libreoffice'
+    chef_run.node.normal['transformations']['libreoffice']['tar']['url'] = 'http://libreofficeurl'
     chef_run.converge(described_recipe)
-    expect(chef_run).to run_execute('unpack-libreoffice').with(
-      cwd: '/var/chef/cache',
-      command: 'tar -xf libreoffice.tar.gz',
+    expect(chef_run).to extract_tar_extract('http://libreofficeurl').with(
+      target_dir: '/var/chef/cache',
       creates: '/var/chef/cache/libreoffice'
     )
   end
@@ -57,13 +45,17 @@ RSpec.describe 'alfresco-transformations::libreoffice' do
     )
   end
 
-  it 'should run ruby block get LibreOffice installation Path' do
-    expect(chef_run).to run_ruby_block('get LibreOffice installation Path')
+  it 'should create transient_variable libreoffice_path' do
+    expect(chef_run).to create_transient_variable('libreoffice_path')
   end
 
-  it 'should run soffice.bin rename' do
+  it 'should run file_rename' do
+    chef_run.node.run_state['libreoffice_path'] = '/opt/libreoffice'
     chef_run.converge(described_recipe)
-    expect(chef_run).to run_ruby_block('soffice.bin rename')
+    expect(chef_run).to create_file_rename('soffice.bin to .soffice.bin rename').with(
+      old_value: '/opt/libreoffice/program/soffice.bin',
+      new_value: '/opt/libreoffice/program/.soffice.bin'
+    )
   end
 
   it 'should create soffice.bin template' do
@@ -73,8 +65,8 @@ RSpec.describe 'alfresco-transformations::libreoffice' do
       path: '/opt/libreoffice/program/soffice.bin',
       source: 'soffice.bin.erb',
       owner: 'libreoffice',
-      group: 'libreoffice',
-      mode: 00700,
+      group: 'tomcat',
+      mode: 00755,
       variables: { lo_user: 'libreoffice', lo_path: '/opt/libreoffice' }
     )
   end
@@ -83,12 +75,20 @@ RSpec.describe 'alfresco-transformations::libreoffice' do
     expect(chef_run).to create_directory('/usr/share/tomcat/alfresco/temp').with(
       recursive: true,
       owner: 'tomcat',
-      mode: 02755
+      mode: 02775
     )
   end
 
-  it 'should run execute change-libreoffice-permissions' do
-    expect(chef_run).to run_execute('change-libreoffice-permissions')
+  it 'should run change_own_mod' do
+    chef_run.node.run_state['libreoffice_path'] = '/opt/libreoffice'
+    chef_run.converge(described_recipe)
+    expect(chef_run).to run_change_own_mod('libreoffice').with(
+      source: '/opt/libreoffice',
+      mode: '755',
+      user: 'libreoffice',
+      group: 'tomcat',
+      recursive: true
+    )
   end
 
   it 'should add tomcat sudoer user' do

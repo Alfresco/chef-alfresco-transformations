@@ -1,7 +1,6 @@
 libreoffice_user = node['transformations']['libreoffice']['libreoffice_user']
 tomcat_user = node['transformations']['libreoffice']['tomcat_user']
 libre_office_name = node['transformations']['libreoffice']['name']
-libre_office_tar_name = node['transformations']['libreoffice']['tar']['name']
 libre_office_tar_url = node['transformations']['libreoffice']['tar']['url']
 libreoffice_temp_folder = node['transformations']['libreoffice']['temp_folder']
 link_directory = node['transformations']['libreoffice']['link_directory']
@@ -17,16 +16,8 @@ group tomcat_user do
   action :manage
 end
 
-remote_file "#{Chef::Config[:file_cache_path]}/#{libre_office_tar_name}" do
-  source libre_office_tar_url
-  owner libreoffice_user
-  group libreoffice_user
-  retries 2
-end
-
-execute 'unpack-libreoffice' do
-  cwd Chef::Config[:file_cache_path]
-  command "tar -xf #{libre_office_tar_name}"
+tar_extract libre_office_tar_url do
+  target_dir Chef::Config[:file_cache_path]
   creates "#{Chef::Config[:file_cache_path]}/#{libre_office_name}"
 end
 
@@ -35,27 +26,21 @@ execute 'install-libreoffice' do
   not_if 'yum list installed | grep libreoffice'
 end
 
-ruby_block 'get LibreOffice installation Path' do
-  block do
-    node.run_state['libreoffice_path'] = libre_office_path
-  end
+transient_variable 'libreoffice_path' do
+  variable_value lazy { libre_office_path }
 end
 
-ruby_block 'soffice.bin rename' do
-  block do
-    path = node.run_state['libreoffice_path']
-    unless File.exist?("#{path}/program/.soffice.bin")
-      File.rename("#{path}/program/soffice.bin", "#{path}/program/.soffice.bin")
-    end
-  end
+file_rename 'soffice.bin to .soffice.bin rename' do
+  old_value lazy { "#{node.run_state['libreoffice_path']}/program/soffice.bin" }
+  new_value lazy { "#{node.run_state['libreoffice_path']}/program/.soffice.bin" }
 end
 
 template 'soffice.bin template' do
   path lazy { "#{node.run_state['libreoffice_path']}/program/soffice.bin" }
   source 'soffice.bin.erb'
   owner libreoffice_user
-  group libreoffice_user
-  mode 00700
+  group tomcat_user
+  mode 00755
   variables lazy {
               {
                 lo_user: libreoffice_user,
@@ -68,16 +53,15 @@ directory libreoffice_temp_folder do
   action :create
   owner tomcat_user
   group tomcat_user
-  mode 02755
+  mode 02775
 end
 
-execute 'change-libreoffice-permissions' do
-  command lazy {
-    <<-EOF
-      chown #{libreoffice_user}:#{tomcat_user} -R #{node.run_state['libreoffice_path']}
-      chmod -R 00755 #{node.run_state['libreoffice_path']}
-      EOF
-  }
+change_own_mod 'libreoffice' do
+  source lazy { node.run_state['libreoffice_path'] }
+  mode '755'
+  user libreoffice_user
+  group tomcat_user
+  recursive true
 end
 
 sudo 'libreoffice' do
