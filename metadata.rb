@@ -4,7 +4,7 @@ maintainer_email 'devops@alfresco.com'
 license 'Apache 2.0'
 description 'Installs/Configures chef-alfresco-transformations'
 long_description 'Installs/Configures chef-alfresco-transformations'
-version '0.1.0'
+version '1.0'
 
 chef_version '~> 12' if respond_to?(:chef_version)
 
