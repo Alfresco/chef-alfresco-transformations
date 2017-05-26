@@ -88,12 +88,16 @@ Include `alfresco-tranformations` in your node `run_list`:
 
 `initialise_libreoffice`: resource to initalise Libreoffice and verify it works correctly. It is mainly used within EC2 instances with AMI pre-baked with LibreOffice
 
-properties:
+**properties:**
 
 `version` String, default: lazy { node['transformations']['libreoffice']['version'] }
+
 `initialise_command` String, default: lazy { node['transformations']['libreoffice']['initialise']['command']['full'] }
+
 `run_user` String, default: lazy { node['transformations']['libreoffice']['tomcat_user'] }
+
 `user_installation_path` String, default: lazy { node['transformations']['libreoffice']['initialise']['command']['user_installation_path'] }
+
 `lo_installation_path` String, default: lazy { libre_office_path }
 
 example:
